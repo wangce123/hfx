@@ -1,0 +1,176 @@
+<!--  -->
+<template>
+  <div class="course-main">
+    <div class="banner">
+      <ul id="banner">
+        <li v-for="item in courseList" :key="item.index">
+          <img src="@/assets/img/banner.jpg" alt />
+        </li>
+      </ul>
+    </div>
+    <div class="wrapper">
+      <ul class="content">
+        <li
+          v-for="(item,index) in courseList"
+          :class="{active:index == courseIndex}"
+          :key="index"
+          @click="changeBanner($event,index)"
+        >
+          <div class="li-in">
+            <img :src="mockImage" alt />
+            <div class="dsc">
+              <p class="name">{{item.name}}</p>
+              <p class="num">{{item.num}}首</p>
+            </div>
+            <div class="iconBox">
+              <img :src="leftIcon" @click.stop="toDetail(0,index)" alt />
+              <img :src="rightIcon" @click.stop="toDetail(1,index)" alt />
+            </div>
+          </div>
+        </li>
+      </ul>
+      <!-- <img style="width:375px;height:200px" :src="$store.state.course.courseList[0].singerImg" alt=""> -->
+    </div>
+  </div>
+</template>
+
+<script>
+import Mock from "mockjs";
+var Random = Mock.Random;
+import { mapState, mapMutations, mapActions, mapGetters } from "vuex";
+export default {
+  name: "course",
+  data() {
+    return {
+      mockImage: Random.image("144x120", "#4d4d4d"),
+      leftIcon: require("@/assets/icon/audio.png"),
+      rightIcon: require("@/assets/icon/video.png"),
+      courseIndex: 0
+      // courseList: []
+    };
+  },
+
+  computed: {
+    ...mapState({
+      courseList: state => state.course.courseList
+    })
+  },
+
+  methods: {
+    // ...mapMutations(["chooseSingerIndex"]),
+    changeBanner(e, val) {
+      var liw = document.querySelector("#banner").children[0].offsetWidth;
+      document.querySelector(".banner ul").style.left = -val * liw + "px";
+      this.courseIndex = val;
+    },
+    toDetail(a, b) {
+      console.log(b);
+      this.$router.push({
+        name: `${a == 0 ? "audio" : "video"}`,
+        query: {
+          queryType: a,
+          queryId: b
+        }
+      });
+      console.log(this.$store);
+      // this.$store.commit("chooseSingerIndex", b);
+      // this.chooseSingerIndex(b);
+      // console.log(this.$store);
+    }
+  },
+  created() {},
+  mounted() {
+    this.$store.commit('changeIsAll');
+    console.log(this.$store.state)
+  }
+};
+</script>
+<style lang="scss" scoped>
+.course-main {
+  .banner {
+    width: 100%;
+    height: 180px;
+    // background-color: violet;
+    position: relative;
+    overflow: hidden;
+    ul {
+      transition: all 0.5s ease;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 700%;
+      height: 100%;
+      li {
+        width: 375px;
+        height: 100%;
+        float: left;
+        img {
+          width: 100%;
+          height: 100%;
+        }
+      }
+    }
+  }
+  .wrapper {
+    .content {
+      li {
+        width: 100%;
+        height: 90px;
+        font-size: 20px;
+        font-family: 'SourceHanSansBold';
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        .li-in {
+          height: 60px;
+          width: 335px;
+          margin-left: 2px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          img {
+            width: 72px;
+            height: 60px;
+            border-radius: 5px;
+          }
+          .dsc {
+            width: 180px;
+            height: 100%;
+            margin-left: 15px;
+            margin-right: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            text-align: left;
+            .name {
+              height: 100%;
+              font-size: 15px;
+              line-height: 18px;
+              color: #494949;
+            }
+            .num {
+              font-size: 12px;
+              color: #a6a6a6;
+              margin-top: 12px;
+            }
+          }
+          .iconBox {
+            width: 58px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            img {
+              width: 20px;
+              height: 19px;
+            }
+          }
+        }
+        &.active {
+          background-color: #f8f8f8;
+        }
+      }
+    }
+  }
+}
+</style>
