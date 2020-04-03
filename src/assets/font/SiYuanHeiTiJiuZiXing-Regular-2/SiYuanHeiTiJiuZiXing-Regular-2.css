@@ -1,0 +1,10 @@
+@charset "UTF-8";
+
+@font-face {
+  font-family: "SiYuanHeiTiJiuZiXing-Regular-2";
+  src: url("SiYuanHeiTiJiuZiXing-Regular-2.ttf") format("truetype"),
+       url("SiYuanHeiTiJiuZiXing-Regular-2.eot") format("embedded-opentype"),
+       url("SiYuanHeiTiJiuZiXing-Regular-2.svg") format("svg");
+  font-weight: normal;
+  font-style: normal;
+}

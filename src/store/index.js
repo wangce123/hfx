@@ -1,9 +1,7 @@
 import Vue from "vue";
 import Vuex from "vuex";
-
+import course from "./modules/course";
 Vue.use(Vuex);
-
-import course from "./modules/course.js"
 
 const index = new Vuex.Store({
   state: {
@@ -14,7 +12,7 @@ const index = new Vuex.Store({
       state.isAll = true;
     }
   },
-  modules: {
+  modules:{
     course
   }
 });

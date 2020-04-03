@@ -26,5 +26,21 @@ module.exports = {
                 "windows.jQuery": "jquery"
             })
         ]
+    },
+    devServer: {
+        open: true,
+        overlay: {
+            warnings: false,
+            errors: true
+        },
+        // port: 8091,
+        proxy: {
+            '^/huisharingadmin': {   // 拦截 以/admin开头的 相对 url请求, 并且在前面自动拼接 target的目标地址 
+                target: `http://121.41.118.230:8091`,
+                changeOrigin: true,  // 允许跨域? true
+                pathRewrite: {
+                }
+            },
+        }
     }
 }

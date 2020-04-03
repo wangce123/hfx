@@ -23,11 +23,13 @@ Vue.use(Vant);
 import $ from 'jquery';
 
 //引入外部字体
-import './assets/css/font.css'
+import '@/assets/font/SiYuanHeiTiJiuZiXing-Regular-2/SiYuanHeiTiJiuZiXing-Regular-2.css'
 
 // 引入动态title
 import VueWechatTitle from 'vue-wechat-title'; 
 Vue.use(VueWechatTitle)
+
+
 
 Vue.config.productionTip = false;
 

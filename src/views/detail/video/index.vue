@@ -8,7 +8,7 @@
       right-text="视频"
       :left-arrow="$store.state.isAll == true? true : false"
       @click-left="onClickLeft"
-      @click-right="onClickRight"
+      @click-right="$router.push(`/detail/audio/${btoa(courseIndex)}`)"
     />
     <!-- 视频部分 -->
     <div class="banner">
@@ -47,7 +47,7 @@
           <div>
             <img v-if="index == videoIndex" src="@/assets/icon/voice.png" alt />
             <span v-else>{{index < 9 ? '0'+(index+1) : index+1}}</span>
-            {{`${item.title}`}}
+            {{`${item.video_name}`}}
           </div>
         </li>
       </ul>
@@ -62,6 +62,7 @@ import "video.js/dist/video-js.css";
 import { videoPlayer } from "vue-video-player";
 import { mapState, mapMutations, mapActions, mapGetters } from "vuex";
 import BScroll from "better-scroll";
+import videoApi from "@/api/mediaApi.js";
 export default {
   name: "video-main",
   components: {
@@ -70,9 +71,10 @@ export default {
   data() {
     return {
       videoIndex: 0,
+      videoList: [],
+      courseName: "",
       courseType: 1,
-      courseIndex: 0,
-      // videoUrl:'http://source.huisharing.com/data//resources/course/100191/video/step1468893594861_video.mp4',
+      courseIndex: 9,
       playerOptions: {
         // videojs options
         muted: false,
@@ -85,22 +87,17 @@ export default {
         sources: [
           {
             type: "video/mp4",
-            src:
-              "http://source.huisharing.com/data//resources/course/100198/video/step1469151384353_video.mp4"
+            src: ""
           }
-        ],
-        poster: Random.image("375x200", "#F9B063", "#FFF", "png", "字母A")
+        ]
+        // poster: Random.image("375x200", "#F9B063", "#FFF", "png", "字母A")
       }
     };
   },
   created() {
-    this.courseIndex = this.$route.query.queryId;
-
-    // 视频资、封面初始化
-    this.playerOptions.sources[0].src = this.videoList[0].url;
-    this.playerOptions.poster = this.videoList[0].poster;
-
-    // window.addEventListener('touchmove', func, { passive: false })
+    let queryId = window.atob(this.$route.params.queryId);
+    this.courseIndex = queryId;
+    this.init();
   },
   mounted() {
     //将better-scroll挂载到vue实例上
@@ -114,16 +111,6 @@ export default {
   },
   computed: {
     ...mapState({
-      courseName: function(state) {
-        var index = this.courseIndex;
-        return state.course.courseList[index].name;
-      },
-      // 根据路由传来的index动态获取vuex中复合条件的视频组
-      videoList: function(state) {
-        var index = this.courseIndex;
-        return state.course.courseList[index].videoList;
-      },
-
       // 在安卓和iOS端微信使用的内核不同,所需要的attribute也不同,尝试后,采用x5内核返回false,反之为true
       playsinline() {
         var ua = navigator.userAgent.toLocaleLowerCase();
@@ -145,18 +132,29 @@ export default {
   },
 
   methods: {
+    //url编码
+    btoa(val) {
+      return window.btoa(val);
+    },
+    //数据初始化，axios请求
+    init() {
+      videoApi
+        .videoApi({
+          page: 1,
+          rows: 999,
+          cd_id: this.courseIndex
+        })
+        .then(res => {
+          console.log(res);
+          this.videoList = res.rows;
+          this.courseName = res.cd_name;
+          // 视频资源、封面初始化
+          this.playerOptions.sources[0].src = this.videoList[0].resourceVideoUrl;
+        });
+    },
     // 这里是tabbar点击事件
     onClickLeft() {
       this.$router.push("/course");
-    },
-    onClickRight() {
-      this.$router.push({
-        name: "audio",
-        query: {
-          queryType: 0,
-          queryId: this.courseIndex
-        }
-      });
     },
 
     // listen event
@@ -212,8 +210,8 @@ export default {
     },
     // 封装切换视频的函数
     changeVideo(val) {
-      this.playerOptions.sources[0].src = this.videoList[val].url;
-      this.playerOptions.poster = this.videoList[val].poster;
+      this.playerOptions.sources[0].src = this.videoList[val].resourceVideoUrl;
+      // this.playerOptions.poster = this.videoList[val].poster;
     }
   }
 };
@@ -224,7 +222,7 @@ export default {
   .van-nav-bar__right {
     span {
       font-size: 15px;
-      font-family: "SourceHanSansBold";
+      font-family: "SiYuanHeiTiJiuZiXing-Regular-2";
       color: #ec6941;
     }
   }
@@ -235,9 +233,9 @@ export default {
   .van-nav-bar__title {
     font-size: 17.5px;
     color: #232323;
-    font-family: "SourceHanSansBold";
+    font-family: "SiYuanHeiTiJiuZiXing-Regular-2";
     font-weight: bold;
-    margin-left: 100px;
+    // margin-left: 100px;
   }
 }
 .video-js .vjs-big-play-button {
@@ -287,16 +285,22 @@ export default {
           height: 100%;
           line-height: 40px;
           color: #333334;
-          font-family: "SourceHanSansBold";
+          font-family: "SiYuanHeiTiJiuZiXing-Regular-2";
           font-size: 17px;
           text-align: left;
+          width: 80%; // 文本超出的处理
+          overflow: hidden; //以下三者、缺一不可
+          white-space: nowrap; //单行
+          text-overflow: ellipsis;
           span {
             color: #999999;
+            margin: auto 10px;
           }
           img {
             vertical-align: text-bottom;
             width: 20px;
             height: 20px;
+            margin: auto 10px;
           }
         }
         &.active div {

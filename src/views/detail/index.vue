@@ -1,16 +1,12 @@
 <!--  -->
 <template>
   <div class="detail-main">
-    <!-- <div class="back" @click="$router.push('/course')">回首页</div>
-    <div class="nav">
-      <router-link to="/detail/audio">音频</router-link>
-      <router-link to="/detail/video">视频</router-link>
-    </div>
-    <router-view class="router-view"></router-view> -->
+    <!-- 此页没用 -->
   </div>
 </template>
 
 <script>
+import audioApi from "@/api/mediaApi.js"
 export default {
   name: "detail",
   data() {
@@ -22,11 +18,19 @@ export default {
 
   computed: {},
 
-  methods: {},
+  methods: {
+    init(){
+      audioApi.register({
+        page:1,
+        rows:999,
+        cd_id:9
+      }).then(res =>{
+        console.log(res)
+      })
+    }
+  },
   created() {
-    // setInterval(() => {
-    // console.log(this.$route);
-    // },1000);
+    this.init()
   }
 };
 </script>

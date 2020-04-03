@@ -23,13 +23,12 @@
               <p class="num">{{item.num}}首</p>
             </div>
             <div class="iconBox">
-              <img :src="leftIcon" @click.stop="toDetail(0,index)" alt />
-              <img :src="rightIcon" @click.stop="toDetail(1,index)" alt />
+              <img :src="leftIcon" @click.stop="$router.push(`/detail/audio/${btoa(index+9)}`)" alt />
+              <img :src="rightIcon" @click.stop="$router.push(`/detail/video/${btoa(index+9)}`)" alt />
             </div>
           </div>
         </li>
       </ul>
-      <!-- <img style="width:375px;height:200px" :src="$store.state.course.courseList[0].singerImg" alt=""> -->
     </div>
   </div>
 </template>
@@ -57,31 +56,29 @@ export default {
   },
 
   methods: {
-    // ...mapMutations(["chooseSingerIndex"]),
     changeBanner(e, val) {
       var liw = document.querySelector("#banner").children[0].offsetWidth;
       document.querySelector(".banner ul").style.left = -val * liw + "px";
       this.courseIndex = val;
     },
-    toDetail(a, b) {
-      console.log(b);
-      this.$router.push({
-        name: `${a == 0 ? "audio" : "video"}`,
-        query: {
-          queryType: a,
-          queryId: b
-        }
-      });
-      console.log(this.$store);
-      // this.$store.commit("chooseSingerIndex", b);
-      // this.chooseSingerIndex(b);
-      // console.log(this.$store);
+    //url编码
+    btoa(val){
+      return window.btoa(val)
     }
+    // toDetail(a, b) {
+    //   console.log(b);
+    //   this.$router.push({
+    //     name: `${a == 0 ? "audio" : "video"}`,
+    //     query: {
+    //       // queryType: a,
+    //       queryId: b
+    //     }
+    //   });
+    // }
   },
-  created() {},
   mounted() {
-    this.$store.commit('changeIsAll');
-    console.log(this.$store.state)
+    this.$store.commit("changeIsAll");
+    // console.log(this.$store.state);
   }
 };
 </script>
@@ -90,7 +87,6 @@ export default {
   .banner {
     width: 100%;
     height: 180px;
-    // background-color: violet;
     position: relative;
     overflow: hidden;
     ul {
@@ -117,7 +113,7 @@ export default {
         width: 100%;
         height: 90px;
         font-size: 20px;
-        font-family: 'SourceHanSansBold';
+        font-family: "SiYuanHeiTiJiuZiXing-Regular-2";
         display: flex;
         align-items: center;
         justify-content: center;

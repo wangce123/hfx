@@ -1,6 +1,8 @@
 <!--  -->
 <template>
   <div class="audio-main" ontouchstart>
+    <!-- loading部分 -->
+    <van-loading v-if="isLoading" type="spinner" color="#19caad" />
     <!-- 导航栏部分 -->
     <van-nav-bar
       :title="courseName"
@@ -8,7 +10,7 @@
       right-text="音频"
       :left-arrow="$store.state.isAll == true? true : false"
       @click-left="onClickLeft"
-      @click-right="onClickRight"
+      @click-right="$router.push(`/detail/video/${btoa(courseIndex)}`)"
     />
 
     <!-- 播放器banner板块 -->
@@ -17,7 +19,7 @@
       <div class="info">
         <div class="record">
           <div class="record-c">
-            <img :src="audioList[audioIndex].songImg" :class="{rot : !isPaused}" alt />
+            <div class="red"></div>
           </div>
         </div>
         <div class="detail">
@@ -26,11 +28,7 @@
               <img src="@/assets/icon/elephant.png" alt />
             </div>
           </div>
-          <!-- <p>
-              歌手
-              <span>{{$store.state.course.courseList[courseIndex].name}}</span>
-          </p>-->
-          <p>{{audioList[audioIndex].name}}</p>
+          <p v-if="audioList.length > 0">{{audioList[audioIndex].audio_name}}</p>
         </div>
       </div>
       <!-- 播放控件 -->
@@ -71,9 +69,14 @@
         </div>
 
         <!-- audio标签和资源在这 -->
-        <audio @timeupdate="updateCurrentTime" @canplay="canplay" loop>
+        <audio
+          @timeupdate="updateCurrentTime"
+          @canplaythrough="canplaythrough"
+          @waiting="waiting"
+          loop
+        >
           Your browser does not support the audio element.
-          <source :src="`${host}?id=${audioId}.mp3`" type="audio/mp3" />
+          <source :src="resourceAudioUrl" type="audio/mp3" />
         </audio>
       </div>
     </div>
@@ -84,14 +87,14 @@
         <ul class="songList">
           <li
             v-for="(item,index) in audioList"
-            :key="item.id"
+            :key="item.audio_pos"
             :class="{active:index == audioIndex}"
             @click="changeAudioIndex($event,index)"
           >
             <div>
               <img v-if="index == audioIndex" src="@/assets/icon/voice.png" alt />
               <span v-else>{{index < 9 ? '0'+(index+1) : index+1}}</span>
-              {{`${item.name}`}}
+              {{`${item.audio_name}`}}
             </div>
           </li>
         </ul>
@@ -101,34 +104,33 @@
 </template>
 
 <script>
+import Progress from "../component/Progress";
 import { mapState, mapMutations, mapActions, mapGetters } from "vuex";
 import BScroll from "better-scroll";
+import audioApi from "@/api/mediaApi.js";
 export default {
   name: "audio-main",
+  components: {
+    Progress
+  },
   data() {
     return {
       percentage: 0,
       currentTimes: 0,
       durations: 0,
       isPaused: true,
-      host: "http://music.163.com/song/media/outer/url",
-      courseIndex: 0,
+      resourceAudioUrl: "",
+      courseIndex: 9,
       courseType: 0,
       audioIndex: 0,
-      audioId: 385965
+      audioList: [],
+      courseName: "",
+      isLoading: false,
+      isFirstClick: true,
+      firstSrc: ""
     };
   },
   computed: {
-    ...mapState({
-      courseName: function(state) {
-        var index = this.courseIndex;
-        return state.course.courseList[index].name;
-      },
-      audioList: function(state) {
-        var index = this.courseIndex;
-        return state.course.courseList[index].audioList;
-      }
-    }),
     currentTime: function() {
       var a = this.currentTimes;
       return this.timeFormatter(a);
@@ -139,8 +141,9 @@ export default {
     }
   },
   created() {
-    this.courseIndex = this.$route.query.queryId;
-    this.audioId = this.audioList[0].urlId;
+    let queryId = window.atob(this.$route.params.queryId);
+    this.courseIndex = queryId;
+    this.init();
   },
   mounted() {
     //将better-scroll挂载到vue实例上
@@ -157,18 +160,32 @@ export default {
     console.log(this.progressWidth);
   },
   methods: {
+    //url编码
+    btoa(val) {
+      return window.btoa(val);
+    },
+    //数据初始化，axios请求
+    init() {
+      audioApi
+        .audioApi({
+          page: 1,
+          rows: 999,
+          cd_id: this.courseIndex
+        })
+        .then(res => {
+          console.log("res", res);
+          this.audioList = res.rows;
+          this.resourceAudioUrl = res.rows[0].resourceAudioUrl;
+          this.firstSrc = res.rows[0].resourceAudioUrl;
+          // this.audioEle.src = res.rows[0].resourceAudioUrl;
+          // this.isPause = true;
+          console.log(this.resourceAudioUrl);
+          this.courseName = res.cd_name;
+        });
+    },
     // 这里是tabbar点击事件
     onClickLeft() {
       this.$router.push("/course");
-    },
-    onClickRight() {
-      this.$router.push({
-        name: "video",
-        query: {
-          queryType: 1,
-          queryId: this.courseIndex
-        }
-      });
     },
 
     // 转化时间格式
@@ -183,32 +200,56 @@ export default {
     //这里动态改变播放器的进度条和当前播放时间，缓冲成功获取总时长。
     updateCurrentTime() {
       this.currentTimes = this.audioEle.currentTime;
-      this.percentage = Math.floor((this.currentTimes / this.durations) * 100);
+      if (this.durations != 0) {
+        this.percentage = Math.floor(
+          (this.currentTimes / this.durations) * 100
+        );
+      } else {
+        this.percentage = 0;
+      }
     },
-    canplay() {
+    canplaythrough() {
       this.durations = this.audioEle.duration;
+      this.isLoading = false;
+      if (this.audioEle.paused == true) {
+      } else {
+        this.isPaused = false;
+      }
+    },
+    waiting() {
+      this.isLoading = true;
     },
 
     //这里是自定义播放器的控件
     restart() {
       this.audioEle.load();
       this.audioEle.play();
-      this.isPaused = false;
+      // this.isPaused = false;
     },
     pause() {
       this.isPaused = !this.isPaused;
+      if (this.isFirstClick == true) {
+        this.audioEle.src = this.firstSrc;
+        this.isFirstClick = false;
+      }
       if (this.isPaused) {
         this.audioEle.pause();
+        this.isLoading = false;
       } else {
+        console.log("暂停点击", this.resourceAudioUrl, this.audioEle);
         this.audioEle.play();
       }
     },
+    // 点击进度条
     changeProgress(e) {
       var proportion = e.offsetX / this.progressWidth;
       this.percentage = proportion * 100;
-      this.audioEle.currentTime = proportion * this.audioEle.duration;
+      if (this.isFirstClick != true) {
+        this.audioEle.currentTime = proportion * this.audioEle.duration;
+      }
       console.log(e.offsetX);
     },
+
     last() {
       if (this.audioIndex == 0) {
         this.$toast("小朋友，这是第一节哦");
@@ -230,49 +271,50 @@ export default {
     changeAudioIndex(e, val) {
       this.audioIndex = val;
       this.changeAudio();
+      console.log("列表点击", this.audioEle);
     },
 
     // 封装切换音频的函数
     changeAudio() {
+      this.currentTimes = 0;
+      this.durations = 0;
       this.isPaused = true;
-      this.audioId = this.audioList[this.audioIndex].urlId;
-      this.audioEle.src = `${this.host}?id=${this.audioId}.mp3`;
+      this.resourceAudioUrl = this.audioList[this.audioIndex].resourceAudioUrl;
+      this.audioEle.src = this.resourceAudioUrl;
       this.audioEle.play();
       console.log(this.audioEle.readyState);
-      setTimeout(() => {
-        this.isPaused = false;
-      }, 100);
-      console.log(this.audioId);
+      console.log(this.resourceAudioUrl);
     }
   }
 };
 </script>
 <style lang="scss">
+.van-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -15px;
+  margin-left: -15px;
+}
 .van-nav-bar {
   .van-nav-bar__left,
   .van-nav-bar__right {
     span {
       font-size: 15px;
       color: #ec6941;
-      font-family: "SourceHanSansBold";
+      font-family: "SiYuanHeiTiJiuZiXing-Regular-2";
     }
   }
   .van-icon-arrow-left:before {
-    // content: "";
-    // width: 20px;
-    // height: 20px;
-    // background: url("../../../assets/icon/back.png") no-repeat center;
-    // background-size: 10px 16px;
-    // background-position: top;
     content: "\F008";
     color: #ec6941;
   }
   .van-nav-bar__title {
     font-size: 17.5px;
     color: #232323;
-    font-family: "SourceHanSansBold";
+    font-family: "SiYuanHeiTiJiuZiXing-Regular-2";
     font-weight: bold;
-    margin-left: 100px;
+    // margin-left: 100px;
   }
 }
 </style>
@@ -303,6 +345,13 @@ export default {
           display: flex;
           align-items: center;
           justify-content: center;
+          .red {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            // background-color: #c20c0c;
+            background-color: #ec6941;
+          }
           img {
             width: 80px;
             height: 80px;
@@ -322,7 +371,7 @@ export default {
           margin-left: 20px;
           color: #ec6941;
           font-size: 15px;
-          font-family: "SourceHanSansBold";
+          font-family: "SiYuanHeiTiJiuZiXing-Regular-2";
           text-align: left;
         }
         .detail-c {
@@ -409,16 +458,22 @@ export default {
           height: 100%;
           line-height: 40px;
           color: #333334;
-          font-family: "SourceHanSansBold";
+          font-family: "SiYuanHeiTiJiuZiXing-Regular-2";
           font-size: 17px;
           text-align: left;
+          width: 80%; // 文本超出的处理
+          overflow: hidden; //以下三者、缺一不可
+          white-space: nowrap; //单行
+          text-overflow: ellipsis;
           span {
             color: #999999;
+            margin: auto 10px;
           }
           img {
             vertical-align: text-bottom;
             width: 20px;
             height: 20px;
+            margin: auto 10px;
           }
         }
         &.active div {

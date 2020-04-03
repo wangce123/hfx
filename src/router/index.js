@@ -27,23 +27,9 @@ const routes = [
     redirect: '/detail/audio',
     component: () =>
       import("../views/detail/index.vue"),
-    // children: [
-    //   {
-    //     path: "audio",
-    //     name: "audio",
-    //     component: () =>
-    //       import("../views/detail/audio/index.vue")
-    //   },
-    //   {
-    //     path: "video",
-    //     name: "video",
-    //     component: () =>
-    //       import("../views/detail/video/index.vue")
-    //   }
-    // ]
   },
   {
-    path: "/detail/audio",
+    path: "/detail/audio/:queryId",
     name: "audio",
     component: () =>
       import("../views/detail/audio/index.vue"),
@@ -52,10 +38,19 @@ const routes = [
     }
   },
   {
-    path: "/detail/video",
+    path: "/detail/video/:queryId",
     name: "video",
     component: () =>
       import("../views/detail/video/index.vue"),
+    meta: {
+      title: ''
+    }
+  },
+  {
+    path: "/progress",
+    name: "progress",
+    component: () =>
+      import("../components/Progress.vue"),
     meta: {
       title: ''
     }
