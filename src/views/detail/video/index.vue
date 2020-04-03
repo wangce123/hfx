@@ -4,9 +4,9 @@
     <!-- 导航栏部分 -->
     <van-nav-bar
       :title="courseName"
-      :left-text="$store.state.isAll == true? '返回' : ''"
+      :left-text="'返回'"
       right-text="视频"
-      :left-arrow="$store.state.isAll == true? true : false"
+      :left-arrow="true"
       @click-left="onClickLeft"
       @click-right="$router.push(`/detail/audio/${btoa(courseIndex)}`)"
     />

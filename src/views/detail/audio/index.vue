@@ -6,9 +6,9 @@
     <!-- 导航栏部分 -->
     <van-nav-bar
       :title="courseName"
-      :left-text="$store.state.isAll == true? '返回' : ''"
+      :left-text="'返回'"
       right-text="音频"
-      :left-arrow="$store.state.isAll == true? true : false"
+      :left-arrow="true"
       @click-left="onClickLeft"
       @click-right="$router.push(`/detail/video/${btoa(courseIndex)}`)"
     />
@@ -48,17 +48,17 @@
         </div>
         <!-- 进度条/时间/重新播放 -->
         <div class="controller-r">
-          <el-progress
-            ref="progress"
+          <Progress
+            ref="pg"
             class="line"
-            color="#19caad"
-            :text-inside="true"
-            :stroke-width="20"
+            :width="145"
+            :height="20"
+            :color="'#19caad'"
             :percentage="percentage"
-            status="exception"
-            :show-text="false"
-            @click.native="changeProgress"
-          ></el-progress>
+            @touchstart.native="changeProgress_ts"
+            @touchmove.native="changeProgress_tm"
+            @touchend.native="changeProgress_te"
+          ></Progress>
           <div class="time">
             <span class="currentTime">{{currentTime}}</span>
             <span class="duration">{{duration}}</span>
@@ -154,10 +154,6 @@ export default {
 
     // 这里将音频挂载到vue实例上
     this.audioEle = document.getElementsByTagName("audio")[0];
-
-    //这里获取进度条总宽度
-    this.progressWidth = document.querySelectorAll(".line")[0].offsetWidth;
-    console.log(this.progressWidth);
   },
   methods: {
     //url编码
@@ -177,7 +173,7 @@ export default {
           this.audioList = res.rows;
           this.resourceAudioUrl = res.rows[0].resourceAudioUrl;
           this.firstSrc = res.rows[0].resourceAudioUrl;
-          // this.audioEle.src = res.rows[0].resourceAudioUrl;
+          this.audioEle.src = res.rows[0].resourceAudioUrl;
           // this.isPause = true;
           console.log(this.resourceAudioUrl);
           this.courseName = res.cd_name;
@@ -227,27 +223,35 @@ export default {
       // this.isPaused = false;
     },
     pause() {
+      
       this.isPaused = !this.isPaused;
       if (this.isFirstClick == true) {
-        this.audioEle.src = this.firstSrc;
+        // this.audioEle.src = this.firstSrc;
         this.isFirstClick = false;
       }
       if (this.isPaused) {
         this.audioEle.pause();
         this.isLoading = false;
       } else {
-        console.log("暂停点击", this.resourceAudioUrl, this.audioEle);
+        console.log("暂停点击", this.resourceAudioUrl, this.audioEle,this.audioEle.src);
         this.audioEle.play();
       }
     },
     // 点击进度条
-    changeProgress(e) {
-      var proportion = e.offsetX / this.progressWidth;
+    changeProgress_ts(e) {
+      var proportion =
+        (e.touches[0].clientX -
+          document.querySelectorAll(".controller-r")[0].offsetLeft) /
+        this.$refs.pg.width;
       this.percentage = proportion * 100;
-      if (this.isFirstClick != true) {
-        this.audioEle.currentTime = proportion * this.audioEle.duration;
-      }
-      console.log(e.offsetX);
+      this.audioEle && (this.percentage >= 0 && this.percentage <= 100) && (this.audioEle.currentTime = proportion * this.audioEle.duration)
+    },
+    changeProgress_tm(e) {
+      this.audioEle.pause();
+      this.changeProgress_ts(e)
+    },
+    changeProgress_te(e) {
+      this.audioEle && !this.isPaused && this.audioEle.play();
     },
 
     last() {

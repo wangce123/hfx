@@ -1,7 +1,7 @@
 <!--  -->
 <template>
   <div class="course-main">
-    <div class="banner">
+    <div class="banner" style="display:none">
       <ul id="banner">
         <li v-for="item in courseList" :key="item.index">
           <img src="@/assets/img/banner.jpg" alt />
