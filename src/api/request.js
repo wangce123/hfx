@@ -6,6 +6,7 @@ import store from '@/store'
 // import router from '@/router/index'
 // create an axios instance
 const service = axios.create({
+    // baseURL: "http://www.loveenglishbook.com:8083",
     // baseURL: "http://121.41.118.230:8091", // url = base url + request url
     // withCredentials: true, // send cookies when cross-domain requests
     timeout: 5000 // request timeout

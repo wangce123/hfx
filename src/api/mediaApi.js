@@ -16,7 +16,16 @@ function videoApi(data) {
     })
 }
 
+function infoApi(data) {
+    return request({
+        url: `/huisharingadmin/intf/getResourceInfoData`,
+        method: 'post',
+        data: data
+    })
+}
+
 export default {
     audioApi,
-    videoApi
+    videoApi,
+    infoApi
 }

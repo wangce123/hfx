@@ -4,7 +4,7 @@
     <!-- 导航栏部分 -->
     <van-nav-bar
       :title="courseName"
-      :left-text="'返回'"
+      :left-text="'首页'"
       right-text="视频"
       :left-arrow="true"
       @click-left="onClickLeft"
@@ -90,7 +90,6 @@ export default {
             src: ""
           }
         ]
-        // poster: Random.image("375x200", "#F9B063", "#FFF", "png", "字母A")
       }
     };
   },

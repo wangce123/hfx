@@ -17,14 +17,17 @@
           @click="changeBanner($event,index)"
         >
           <div class="li-in">
-            <img :src="mockImage" alt />
+            <img :src="item.cd_picUrl" alt />
             <div class="dsc">
-              <p class="name">{{item.name}}</p>
-              <p class="num">{{item.num}}首</p>
+              <p class="name">{{item.cd_name}}</p>
             </div>
             <div class="iconBox">
-              <img :src="leftIcon" @click.stop="$router.push(`/detail/audio/${btoa(index+9)}`)" alt />
-              <img :src="rightIcon" @click.stop="$router.push(`/detail/video/${btoa(index+9)}`)" alt />
+              <img :src="leftIcon" @click.stop="$router.push(`/detail/audio/${btoa(item.cd_id)}`)" alt />
+              <img
+                :src="rightIcon"
+                @click.stop="$router.push(`/detail/video/${btoa(item.cd_id)}`)"
+                alt
+              />
             </div>
           </div>
         </li>
@@ -35,6 +38,7 @@
 
 <script>
 import Mock from "mockjs";
+import infoApi from "@/api/mediaApi.js";
 var Random = Mock.Random;
 import { mapState, mapMutations, mapActions, mapGetters } from "vuex";
 export default {
@@ -44,14 +48,14 @@ export default {
       mockImage: Random.image("144x120", "#4d4d4d"),
       leftIcon: require("@/assets/icon/audio.png"),
       rightIcon: require("@/assets/icon/video.png"),
-      courseIndex: 0
-      // courseList: []
+      courseIndex: 0,
+      courseList: []
     };
   },
 
   computed: {
     ...mapState({
-      courseList: state => state.course.courseList
+      // courseList: state => state.course.courseList
     })
   },
 
@@ -62,23 +66,34 @@ export default {
       this.courseIndex = val;
     },
     //url编码
-    btoa(val){
-      return window.btoa(val)
+    btoa(val) {
+      return window.btoa(val);
+    },
+    //数据初始化，axios请求
+    init() {
+      infoApi
+        .infoApi({
+          page: 1,
+          rows: 999
+        })
+        .then(res => {
+          console.log("res", res);
+          this.courseList = res.rows
+        });
     }
-    // toDetail(a, b) {
-    //   console.log(b);
-    //   this.$router.push({
-    //     name: `${a == 0 ? "audio" : "video"}`,
-    //     query: {
-    //       // queryType: a,
-    //       queryId: b
-    //     }
-    //   });
-    // }
+  },
+  created() {
+    this.init();
   },
   mounted() {
     this.$store.commit("changeIsAll");
     // console.log(this.$store.state);
+
+    //将better-scroll挂载到vue实例上
+    // let wrapper = document.querySelector(".wrapper");
+    // let scroll = new BScroll(wrapper, {
+    //   click: true
+    // });
   }
 };
 </script>
@@ -141,13 +156,8 @@ export default {
             .name {
               height: 100%;
               font-size: 15px;
-              line-height: 18px;
+              line-height: 50px;
               color: #494949;
-            }
-            .num {
-              font-size: 12px;
-              color: #a6a6a6;
-              margin-top: 12px;
             }
           }
           .iconBox {

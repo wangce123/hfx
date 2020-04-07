@@ -6,7 +6,7 @@
     <!-- 导航栏部分 -->
     <van-nav-bar
       :title="courseName"
-      :left-text="'返回'"
+      :left-text="'首页'"
       right-text="音频"
       :left-arrow="true"
       @click-left="onClickLeft"

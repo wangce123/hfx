@@ -18,7 +18,7 @@ const routes = [
     component: () =>
       import("../views/course/index.vue"),
     meta: {
-      title: '绘分享'
+      title: ''
     }
   },
   {
