@@ -12,7 +12,7 @@
     "better-scroll": "^1.15.2",
     "core-js": "^3.4.3",
     "element-ui": "^2.13.0",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "lib-flexible": "^0.3.2",
     "mockjs": "^1.1.0",
     "qs": "^6.9.3",
